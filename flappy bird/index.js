@@ -17,15 +17,21 @@ pspeed=2  ;
   h1=500;
   w1=20;
   
+  score=0;
+  
 }
 
 function draw() {  
   background(0);
   
-  circle(x,y,30);
-  rect(xrect, yrect, w, h);
+  ball = circle(x,y,30);
+  rect1 = rect(xrect, yrect, w, h);
   
-  rect(xrect1, yrect1, w1, h1);
+  rect2 = rect(xrect1, yrect1, w1, h1);
+  
+  textSize(32);
+  text('score is='+score, 200, 30);
+  fill(225, 225, 225);
   
   islost = 0;
   
@@ -41,19 +47,24 @@ function draw() {
   if( y<0 || y>500){
     islost=1;
   }
-  if(islost==1){
-    speed= 0 ; grav=0;
-    x=30;y=200;
-  }
+  
   
   if(xrect<0 || xrect1<0){
     xrect=xrect1=399;
     h=random(50,250); 
     yrect1 = h+100;
+    score++;
   }
   
-  if(y<=h && y>=50+h){
-    console.log("lost")
+  if(abs(x-xrect)<=30){
+    if(y<h || y>yrect1){
+      islost=1;
+    }
+  }
+  if(islost==1){
+    speed= 0 ; grav=0;
+    x=30;y=200;
+    pspeed=0;
   }
   
 
