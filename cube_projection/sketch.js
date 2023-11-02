@@ -70,7 +70,7 @@ function draw() {
     connect(i, i + 4, projected);
   }
 
-  angle += 0.03;
+  angle += 0.02;
 }
 
 function connect(i, j, points) {
@@ -139,4 +139,11 @@ function vecToMatrix(v) {
 
 function matrixToVec(m) {
   return createVector(m[0][0], m[1][0], m.length > 2 ? m[2][0] : 0);
+}
+
+
+function keyPressed() {
+  if (key === 's') {
+    saveGif('mySketch', 5);
+  }
 }
