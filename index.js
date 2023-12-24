@@ -1,5 +1,5 @@
 all = ['beizer', 'blobby','bouncing_ball','4d','cube_projection','flappy_bird','floating_ball',
-      'knots','minecraft','pendullum','perlin_blurr','purple_rain','snakes','starfield','terrain','tree_fractal','map','sponge','life']
+      'knots','minecraft','pendullum','perlin_blurr','purple_rain','snakes','starfield','terrain','tree_fractal','map','sponge','life','lorenz_attractor']
 
 list = document.querySelector('.list')
 
