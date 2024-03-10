@@ -3,76 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Particle Life</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+    <title>Organic Particle Simulation</title>
 </head>
 <body>
-    <canvas id="life" width="500" height="500"></canvas>
-<script>
-  //Hunar Ahmad @ brainxyz
-  m = document.getElementById("life").getContext("2d");
-  draw = (x, y, c, s) => {
-    m.fillStyle = c;
-    m.fillRect(x, y, s, s);
-  };
-  atoms = [];
-  atom = (x, y, c) => {
-    return { x: x, y: y, vx: 0, vy: 0, color: c };
-  };
-  random = () => {
-    return Math.random() * 400 + 50;
-  };
-  create = (number, color) => {
-    group = [];
-    for (let i = 0; i < number; i++) {
-      group.push(atom(random(), random(), color));
-      atoms.push(group[i]);
-    }
-    return group;
-  };
-  rule = (atoms1, atoms2, g) => {
-    for (let i = 0; i < atoms1.length; i++) {
-      fx = 0;
-      fy = 0;
-      for (let j = 0; j < atoms2.length; j++) {
-        a = atoms1[i];
-        b = atoms2[j];
-        dx = a.x - b.x;
-        dy = a.y - b.y;
-        d = Math.sqrt(dx * dx + dy * dy);
-        if (d > 0 && d < 80) {
-          F = (g * 1) / d;
-          fx += F * dx;
-          fy += F * dy;
+    <canvas id="particleCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("particleCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Variables
+        let dt = 0.1; // time variable
+        const bg = "black"; // background color
+        const frictionFactor = 0.98; // friction factor
+
+        // Particle class
+        class Particle {
+            constructor(x, y, color, radius) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.radius = radius;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 2,
+                    y: (Math.random() - 0.5) * 2
+                };
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+
+            applyFriction() {
+                this.velocity.x *= frictionFactor;
+                this.velocity.y *= frictionFactor;
+            }
+
+            update() {
+                this.x += this.velocity.x * dt;
+                this.y += this.velocity.y * dt;
+
+                // Add subtle attraction towards the center of the canvas
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const attractForceX = (centerX - this.x) * 0.0005;
+                const attractForceY = (centerY - this.y) * 0.0005;
+
+                this.velocity.x += attractForceX;
+                this.velocity.y += attractForceY;
+
+                // Bounce off walls
+                if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
+                    this.velocity.x = -this.velocity.x;
+                }
+                if (this.y - this.radius <= 0 || this.y + this.radius >= canvas.height) {
+                    this.velocity.y = -this.velocity.y;
+                }
+
+                this.applyForces();
+                this.applyFriction();
+                this.draw();
+            }
+
+            applyForces() {
+                // Apply forces of attraction and repulsion between particles
+                for (let i = 0; i < particles.length; i++) {
+                    if (this !== particles[i]) {
+                        const dx = particles[i].x - this.x;
+                        const dy = particles[i].y - this.y;
+                        const distance = Math.sqrt(dx ** 2 + dy ** 2);
+
+                        // Apply force based on color combinations
+                        let forceFactor = 0;
+
+                        // Attraction and repulsion for particles of the same color
+                        if (this.color === particles[i].color) {
+                            // Strong attraction first
+                            if (distance > 20) {
+                                forceFactor = 0.1; // Attraction force factor
+                            } else {
+                                forceFactor = 0.2; // Repulsion force factor when close
+                            }
+                        } else {
+                            // Mid-attraction for different colors
+                            if (distance > 50) {
+                                forceFactor = 0.05; // Mid-attraction force factor
+                            } else {
+                                forceFactor = -0.5; // Small repulsion force factor when close
+                            }
+                        }
+
+                        // Apply force
+                        const forceX = (dx / distance) * forceFactor;
+                        const forceY = (dy / distance) * forceFactor;
+
+                        this.velocity.x += forceX;
+                        this.velocity.y += forceY;
+                    }
+                }
+            }
         }
-      }
-      a.vx = (a.vx + fx) * 0.5;
-      a.vy = (a.vy + fy) * 0.5;
-      a.x += a.vx;
-      a.y += a.vy;
-      if (a.x <= 0 || a.x >= 500) { a.vx *= -1; }
-      if (a.y <= 0 || a.y >= 500) { a.vy *= -1; }
-    }
-  };
-  yellow = create(400, "blue");
-  red = create(400, "red");
-  green = create(400, "white");
-  update = () => {
-    rule(green, green, -0.32);
-    rule(green, red, -0.17);
-    rule(green, yellow, 0.34);
-    rule(red, red, -0.1);
-    rule(red, green, -0.34);
-    rule(yellow, yellow, 0.15);
-    rule(yellow, green, -0.2);
-    m.clearRect(0, 0, 500, 500);
-    draw(0, 0, "black", 500);
-    for (i = 0; i < atoms.length; i++) {
-      draw(atoms[i].x, atoms[i].y, atoms[i].color, 5);
-    }
-    requestAnimationFrame(update);
-  };
-  update();
-</script>
+
+        const particles = [];
+
+        // Initialize particles with a wider color palette
+        const colors = ["rgba(255, 0, 0, 0.8)", "rgba(0, 0, 255, 0.8)", "rgba(0, 255, 0, 0.8)",
+                        "rgba(255, 255, 0, 0.8)", "rgba(255, 165, 0, 0.8)", "rgba(255, 192, 203, 0.8)",
+                        "rgba(128, 0, 128, 0.8)", "rgba(0, 128, 128, 0.8)","rgba(055, 145, 156, 0.8)"];
+
+        for (let i = 0; i < 1000; i++) {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const radius = 2;
+            particles.push(new Particle(x, y, color, radius));
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw each particle
+            particles.forEach(particle => {
+                particle.update();
+            });
+        }
+
+        animate();
+    </script>
 </body>
 </html>
-

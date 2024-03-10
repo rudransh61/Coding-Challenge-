@@ -75,7 +75,7 @@ function Cell(i, j) {
   
   
   function setup() {
-    createCanvas(400, 400);
+    createCanvas(600, 600);
     rows = height/w;
     cols = width/w;
     for (var j = 0; j < rows; j++) {
