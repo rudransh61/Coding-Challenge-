@@ -17,7 +17,7 @@ let numParticles = 40;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   colorMode(HSB, 360, 100, 100);
-  frameRate(70);
+  frameRate(100); // Increased frame rate to 100 fps
   noStroke();
 
   for (let i = 0; i < minPopulation; i++) {
