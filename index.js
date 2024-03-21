@@ -1,4 +1,4 @@
-all = ['beizer', 'blobby','bouncing_ball','4d','cube_projection','flappy_bird','floating_ball',
+all = ['genes','beizer', 'blobby','bouncing_ball','4d','cube_projection','flappy_bird','floating_ball',
       'knots','maze','minecraft','pendullum','perlin_blurr','purple_rain','snakes','starfield','terrain','nbody','tree_fractal','map','sponge','life','lorenz_attractor','elementary','lsystem','lsystemtriangle','tic-tac-toe','mandelbrot','conway']
 
 list = document.querySelector('.list')
