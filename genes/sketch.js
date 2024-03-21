@@ -191,7 +191,6 @@ class Rocket {
     }
     showgen.html('Generation : '+generation);
     showgen.style('font-size', '16px');
-    showgen.style('color', '#FFF');
     showgen.style('font-family', 'Arial, sans-serif');
   
     // Draw target
