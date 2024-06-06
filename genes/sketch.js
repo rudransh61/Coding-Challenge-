@@ -12,11 +12,17 @@ class Rocket {
     }
 
     update() {
+      var check = true;
+       obstacles.map((obstacle)=>{
         if (this.pos.x > obstacle.x && this.pos.x < obstacle.x + obstacle.width &&
             this.pos.y > obstacle.y && this.pos.y < obstacle.y + obstacle.height) {
-
+            check = false;
         }
-        else {
+      })
+      if(check==false){
+        return ;
+      }
+        
             let d = dist(this.pos.x, this.pos.y, target.x, target.y);
             if (d > 16) { // Adjust the threshold as needed
                 if (lifeCounter < this.dna.genes.length) {
@@ -32,7 +38,7 @@ class Rocket {
             }
         }
 
-    }
+    
 
     show() {
         push();
@@ -57,11 +63,15 @@ class Rocket {
             this.fitness = 1 / d;
         }
         // Check for collision with obstacle
-        if (this.pos.x > obstacle.x && this.pos.x < obstacle.x + obstacle.width &&
+       obstacles.map((obstacle)=>{
+         if (this.pos.x > obstacle.x && this.pos.x < obstacle.x + obstacle.width &&
             this.pos.y > obstacle.y && this.pos.y < obstacle.y + obstacle.height) {
             this.fitness *= 0.1; // Reduce fitness significantly if it hits the obstacle
         }
+       })
+       
     }
+    
 
 }
 class DNA {
@@ -169,7 +179,12 @@ let lifeCounter = 0;
 let target;
 let maxforce = 0.5;
 let generation = 1;
-obstacle = { x: 100, y: 150, width: 200, height: 20 };
+obstacles = [
+  {x: 100, y: 150, width: 200, height: 20},
+  {x: 150 , y: 0  ,width: 100, height : 20},
+  {x: 20,y:50, width : 10 , height : 200},
+  {x:370,y:50,width:10,height:200}
+];
 
 function setup() {
     createCanvas(400, 300);
@@ -199,5 +214,10 @@ function draw() {
     ellipse(target.x, target.y, 16, 16);
 
     fill(255, 0, 0);
+  obstacles.map((obstacle)=>{
+    
     rect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+  })
+    
+  
 }
