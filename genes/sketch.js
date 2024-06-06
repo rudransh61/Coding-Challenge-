@@ -180,8 +180,8 @@ let target;
 let maxforce = 0.5;
 let generation = 1;
 obstacles = [
-  {x: 100, y: 150, width: 200, height: 20},
-  {x: 150 , y: 0  ,width: 100, height : 20},
+  {x: 150, y: 100, width: 100, height: 10},
+  {x: 150 , y: 0  ,width: 100, height : 10},
   {x: 20,y:50, width : 10 , height : 200},
   {x:370,y:50,width:10,height:200}
 ];
