@@ -213,7 +213,7 @@ class Prey {
 
   updateHunger() {
     let speed = map(this.hunger, 0, 100, 0, 10);
-    this.hunger -= map(speed,0,10,0,0.15);
+    this.hunger -= map(speed,0,10,0,0.5);
   }
 
   isDead() {
