@@ -2,7 +2,7 @@ let prey = [];
 let predators = [];
 let food = [];
 let preyPopulationSize = 100;
-let predatorPopulationSize = 4;
+let predatorPopulationSize = 2;
 
 function setup() {
   createCanvas(1000, 1000);
@@ -74,7 +74,7 @@ console.log(`Prey Population: ${prey.length}`);
   }
   
   // Reproduce prey
-  if (frameCount % 100 === 0) {
+  if (frameCount % 200 === 0) {
     prey.concat(evolvePopulation(prey, Prey));
     predators.concat(evolvePopulation(predators, Predator));
     console.log(`Prey Population: ${prey.length}`);
@@ -141,7 +141,7 @@ class NeuralNetwork {
 
    static mutate(network) {
     for (let i = 0; i < network.weights.length; i++) {
-      if (random() < 0.1) {
+      if (random() < 0.3) {
         network.weights[i] += randomGaussian() * 0.1;
       }
     }
@@ -212,7 +212,8 @@ class Prey {
   }
 
   updateHunger() {
-    this.hunger -= 0.1;
+    let speed = map(this.hunger, 0, 100, 0, 10);
+    this.hunger -= map(speed,0,10,0,0.15);
   }
 
   isDead() {
@@ -240,7 +241,7 @@ class Predator {
     ];
     let output = this.brain.predict(inputs);
     let angle = output[0] * TWO_PI;
-    let speed = map(this.hunger, 0, 150, 0, 2.5); // Slower speed
+    let speed = map(this.hunger, 0, 150, 0, 2); // Slower speed
     this.x += cos(angle) * speed;
     this.y += sin(angle) * speed;
     this.x = constrain(this.x, 0, width);
@@ -270,7 +271,7 @@ class Predator {
         let index = preyList.indexOf(closestPrey);
         if (index > -1) {
           preyList.splice(index, 1);
-          this.hunger += 50;
+          this.hunger += 10;
         }
       }
     }
@@ -282,7 +283,9 @@ class Predator {
   }
 
   updateHunger() {
-    this.hunger -= 0.5;
+    // this.hunger -= 0.1;
+    let speed = map(this.hunger, 0, 100, 0, 10);
+    this.hunger -= map(speed,0,10,0,0.1);
   }
 
   isDead() {
