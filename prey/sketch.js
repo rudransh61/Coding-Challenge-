@@ -13,7 +13,7 @@ function setup() {
   for (let i = 0; i < predatorPopulationSize; i++) {
     predators.push(new Predator());
   }
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 500; i++) {
     food.push(new Food());
   }
   
