@@ -1,7 +1,7 @@
 let organisms = [];
 let food = [];
 let mangoesPerTree = 50;
-let energyFromMango = 25;
+let energyFromMango = 10;
 // let energyLossPerMove = 1;
 let initialCountTeam = 50;
 let initialCountSolo = 50;
@@ -11,6 +11,7 @@ let mutationRate = 0.5;
 let soloManColor = [255, 0, 0];
 let teamManColor = [0, 0, 255];
 let day = 1;
+let naturaldeath = 0.327;
 
 function setup() {
   createCanvas(2000, 900);
@@ -77,7 +78,9 @@ function draw() {
             newColor = teamManColor;
           }
         }
-        newOrganisms.push(new Organism(newX, newY, newColor, !o.isTeam));
+        if (random() < 0.4) { // Chance of death per frame
+          newOrganisms.push(new Organism(newX, newY, newColor, !o.isTeam));
+        }
       }
     }
     organisms = organisms.concat(newOrganisms);
@@ -163,15 +166,16 @@ class Organism {
     this.y = y;
     this.color = color;
     this.isTeam = isTeam;
-    this.energy = 500;
+    this.energy = 200;
     this.neuralNetwork = new NeuralNetwork(4, 10, 2);
   }
 
   update(amount) {
     this.energy -= amount;
     this.updatePosition();
-    if (random() < 0.0000327) { // Chance of death per frame
+    if (random() < naturaldeath) { // Chance of death per frame
       this.energy = 0;
+      naturaldeath=Math.pow(naturaldeath,2);
     }
   }
 
