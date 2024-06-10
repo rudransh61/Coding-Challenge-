@@ -6,12 +6,15 @@ let energyFromMango = 10;
 let initialCountTeam = 50;
 let initialCountSolo = 50;
 let energyLossPerDay = 10;
-let reproductionEnergyCost = 100;
+let reproductionEnergyCost = 50;
 let mutationRate = 0.5;
 let soloManColor = [255, 0, 0];
 let teamManColor = [0, 0, 255];
 let day = 1;
 let naturaldeath = 0.327;
+let fights = 0;
+let fightwinsTeam = 0;
+let fightwinsSolo = 0;
 
 function setup() {
   createCanvas(2000, 900);
@@ -47,8 +50,11 @@ function draw() {
 
     // Display counts on the screen
     fill(0);
-    text(`Solo Organisms: ${soloCount}`, 20, height - 50);
-    text(`Team Organisms: ${teamCount}`, 20, height - 30);
+    text(`Solo Organisms: ${soloCount}`, 20, height - 90);
+    text(`Team Organisms: ${teamCount}`, 20, height - 70);
+    text(`Total number of Fights: ${fights}`, 20, height - 50);
+    text(`Fights Team Won : ${fightwinsTeam}`, 20, height - 30);
+    text(`Fights Solo Won : ${fightwinsSolo}`, 20, height - 10);
   
     // Check if all mangoes are eaten
     if (food.length === 0) {
@@ -141,7 +147,9 @@ function reproduce() {
           newColor = teamManColor;
         }
       }
-      newOrganisms.push(new Organism(newX, newY, newColor, !o.isTeam));
+      if(random() < 0.5){ // Chance of death per frame
+        newOrganisms.push(new Organism(newX, newY, newColor, !o.isTeam));
+      }
     }
   }
   organisms = organisms.concat(newOrganisms);
@@ -158,16 +166,14 @@ class Food {
     fill(0, 255, 0);
     ellipse(this.x, this.y, this.size);
   }
-}
-
-class Organism {
+}class Organism {
   constructor(x, y, color, isTeam = false) {
     this.x = x;
     this.y = y;
     this.color = color;
     this.isTeam = isTeam;
-    this.energy = 200;
-    this.neuralNetwork = new NeuralNetwork(4, 10, 2);
+    this.energy = 100;
+    this.neuralNetwork = new NeuralNetwork(5, 10, 2); // Updated input size to 5
   }
 
   update(amount) {
@@ -186,12 +192,23 @@ class Organism {
 
   updatePosition() {
     let closestFood = this.findClosest(food);
+    let closestOpponent = this.findClosestOpponent();
+    
+    // Normalize distances
+    let normalizedFoodDist = closestFood ? dist(this.x, this.y, closestFood.x, closestFood.y) / width : 1;
+    let normalizedOpponentDist = closestOpponent ? dist(this.x, this.y, closestOpponent.x, closestOpponent.y) / width : 1;
+    
+    // Invert the opponent distance for maximization
+    let invertedOpponentDist = 1 - normalizedOpponentDist;
+
     let inputs = [
-      this.energy,
-      closestFood ? dist(this.x, this.y, closestFood.x, closestFood.y) : width,
-      food.length,
-      this.isTeam ? 1 : 0
+      this.energy / 100, // Assuming energy ranges between 0 and 100
+      normalizedFoodDist,
+      food.length / 100, // Assuming a max of 100 food items for normalization
+      this.isTeam ? 1 : 0,
+      invertedOpponentDist
     ];
+    
     let output = this.neuralNetwork.predict(inputs);
     let angle = output[0] * TWO_PI;
     let speed = 3; // Fixed speed
@@ -210,17 +227,70 @@ class Organism {
     // Check if close enough to food
     for (let i = food.length - 1; i >= 0; i--) {
       let d = dist(this.x, this.y, food[i].x, food[i].y);
-      if (d < 10) {
+      if (d < 15) {
         food.splice(i, 1); // Remove eaten food
         if (this.isTeam) {
-          distributeEnergyToTeam();
+          this.distributeEnergyToTeam();
         } else {
           this.energy += energyFromMango; // Increase energy
         }
       }
     }
+    
+    // Check if close enough to fight
+    for (let i = organisms.length - 1; i >= 0; i--) {
+      if (organisms[i] !== this) {
+        let d = dist(this.x, this.y, organisms[i].x, organisms[i].y);
+        if (d < 20) { // Fight if close enough
+          this.fight(organisms[i]);
+          
+          // Move apart after the fight
+          if(this.isTeam != organisms[i].isTeam) {
+            let angle = random(TWO_PI);
+            this.x = (this.x + cos(angle) * 20 + width) % width;
+            this.y = (this.y + sin(angle) * 20 + height) % height;
+            
+            organisms[i].x = (organisms[i].x + cos(angle + PI) * 20 + width) % width;
+            organisms[i].y = (organisms[i].y + sin(angle + PI) * 20 + height) % height;
+          }
+        }
+      }
+    }
+}
+
+  fight(opponent) {
+    if (this.isTeam != opponent.isTeam) {
+      if(this.energy > opponent.energy) {
+        opponent.energy = opponent.energy * 99 / 100;
+        fights++;
+        if(this.isTeam){
+          fightwinsTeam++;
+        }
+        else{
+          fightwinsSolo++;
+        }
+      } else if(this.energy < opponent.energy) {
+        this.energy = this.energy * 99 / 100;
+        fights++;
+        if(this.isTeam){
+          fightwinsSolo++;
+        }
+        else{
+          fightwinsTeam++;
+        }
+      } else {
+        opponent.energy = opponent.energy * 99 / 100;
+        this.energy = this.energy * 99 / 100;
+        fights++;
+        // fightwinsSolo++;
+        // fightwinsTeam++;
+      }
+    }
   }
-  
+
+  getTeamMembers() {
+    return organisms.filter(o => o.isTeam === this.isTeam && dist(this.x, this.y, o.x, o.y) < 100);
+  }
   
   show() {
     let x = constrain(this.x, 0, width);
@@ -228,7 +298,6 @@ class Organism {
     fill(0, 255, 0);
     ellipse(x, y, this.size);
   }
-  
   
   distributeEnergyToTeam() {
     let totalEnergy = 0;
@@ -245,9 +314,6 @@ class Organism {
     }
   }
   
-  
-  
-
   findClosest(list) {
     let closest = null;
     let closestDist = Infinity;
@@ -261,11 +327,27 @@ class Organism {
     return closest;
   }
 
+  findClosestOpponent() {
+    let closest = null;
+    let closestDist = Infinity;
+    for (let o of organisms) {
+      if (o.isTeam !== this.isTeam) {
+        let d = dist(this.x, this.y, o.x, o.y);
+        if (d < closestDist) {
+          closestDist = d;
+          closest = o;
+        }
+      }
+    }
+    return closest;
+  }
+
   show() {
     fill(this.color);
     ellipse(this.x, this.y, 20, 20);
   }
 }
+
 
 class NeuralNetwork {
   constructor(inputSize, hiddenSize, outputSize) {
