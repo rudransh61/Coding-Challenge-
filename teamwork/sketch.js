@@ -1,17 +1,17 @@
 let organisms = [];
 let food = [];
-let mangoesPerTree = 50;
+let mangoesPerTree = 200;
 let energyFromMango = 10;
 // let energyLossPerMove = 1;
-let initialCountTeam = 50;
-let initialCountSolo = 50;
+let initialCountTeam = 1;
+let initialCountSolo = 1;
 let energyLossPerDay = 10;
 let reproductionEnergyCost = 50;
 let mutationRate = 0.5;
 let soloManColor = [255, 0, 0];
 let teamManColor = [0, 0, 255];
 let day = 1;
-let naturaldeath = 0.327;
+let naturaldeath = 0.0;
 let fights = 0;
 let fightwinsTeam = 0;
 let fightwinsSolo = 0;
@@ -110,7 +110,7 @@ function initializeDay() {
   for (let i = 0; i < mangoesPerTree; i++) {
     let x = random(width);
     let y = random(height);
-    food.push(new Food(x, y));
+    food.push(new Food(100, i));
   }
 }
 
@@ -173,7 +173,7 @@ class Food {
     this.color = color;
     this.isTeam = isTeam;
     this.energy = 100;
-    this.neuralNetwork = new NeuralNetwork(5, 10, 2); // Updated input size to 5
+    this.neuralNetwork = new NeuralNetwork(4, 10, 2); // Updated input size to 5
   }
 
   update(amount) {
@@ -193,25 +193,16 @@ class Food {
   updatePosition() {
     let closestFood = this.findClosest(food);
     let closestOpponent = this.findClosestOpponent();
-    
-    // Normalize distances
-    let normalizedFoodDist = closestFood ? dist(this.x, this.y, closestFood.x, closestFood.y) / width : 1;
-    let normalizedOpponentDist = closestOpponent ? dist(this.x, this.y, closestOpponent.x, closestOpponent.y) / width : 1;
-    
-    // Invert the opponent distance for maximization
-    let invertedOpponentDist = 1 - normalizedOpponentDist;
-
     let inputs = [
-      this.energy / 100, // Assuming energy ranges between 0 and 100
-      normalizedFoodDist,
-      food.length / 100, // Assuming a max of 100 food items for normalization
+      this.energy,
+      closestFood ? dist(this.x, this.y, closestFood.x, closestFood.y) : width,
+      food.length,
       this.isTeam ? 1 : 0,
-      invertedOpponentDist
+      // closestOpponent ? dist(this.x, this.y, closestOpponent.x, closestOpponent.y) : width
     ];
-    
     let output = this.neuralNetwork.predict(inputs);
     let angle = output[0] * TWO_PI;
-    let speed = 3; // Fixed speed
+    let speed = 10; // Fixed speed
     
     // Calculate new position
     let newX = this.x + cos(angle) * speed;
@@ -227,7 +218,7 @@ class Food {
     // Check if close enough to food
     for (let i = food.length - 1; i >= 0; i--) {
       let d = dist(this.x, this.y, food[i].x, food[i].y);
-      if (d < 15) {
+      if (d < 10) {
         food.splice(i, 1); // Remove eaten food
         if (this.isTeam) {
           this.distributeEnergyToTeam();
@@ -256,7 +247,7 @@ class Food {
         }
       }
     }
-}
+  }
 
   fight(opponent) {
     if (this.isTeam != opponent.isTeam) {
@@ -377,3 +368,5 @@ class NeuralNetwork {
     return outputs;
   }
 }
+
+function fitness(everyOne,targetToReach){}
