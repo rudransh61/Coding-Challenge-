@@ -1,10 +1,10 @@
 let organisms = [];
 let food = [];
-let mangoesPerTree = 200;
+let mangoesPerTree = 50;
 let energyFromMango = 10;
 // let energyLossPerMove = 1;
-let initialCountTeam = 1;
-let initialCountSolo = 1;
+let initialCountTeam = 50;
+let initialCountSolo = 50;
 let energyLossPerDay = 10;
 let reproductionEnergyCost = 50;
 let mutationRate = 0.5;
@@ -110,7 +110,7 @@ function initializeDay() {
   for (let i = 0; i < mangoesPerTree; i++) {
     let x = random(width);
     let y = random(height);
-    food.push(new Food(100, i));
+    food.push(new Food(x, y));
   }
 }
 
@@ -189,7 +189,6 @@ class Food {
     return this.energy <= 0;
   }
   
-
   updatePosition() {
     let closestFood = this.findClosest(food);
     let closestOpponent = this.findClosestOpponent();
@@ -198,11 +197,10 @@ class Food {
       closestFood ? dist(this.x, this.y, closestFood.x, closestFood.y) : width,
       food.length,
       this.isTeam ? 1 : 0,
-      // closestOpponent ? dist(this.x, this.y, closestOpponent.x, closestOpponent.y) : width
     ];
     let output = this.neuralNetwork.predict(inputs);
     let angle = output[0] * TWO_PI;
-    let speed = 10; // Fixed speed
+    let speed = 3; // Fixed speed
     
     // Calculate new position
     let newX = this.x + cos(angle) * speed;
@@ -248,11 +246,13 @@ class Food {
       }
     }
   }
+  
 
+  
   fight(opponent) {
     if (this.isTeam != opponent.isTeam) {
       if(this.energy > opponent.energy) {
-        opponent.energy = opponent.energy * 99 / 100;
+        opponent.energy = opponent.energy -20;
         fights++;
         if(this.isTeam){
           fightwinsTeam++;
@@ -261,7 +261,7 @@ class Food {
           fightwinsSolo++;
         }
       } else if(this.energy < opponent.energy) {
-        this.energy = this.energy * 99 / 100;
+        this.energy = this.energy -20;
         fights++;
         if(this.isTeam){
           fightwinsSolo++;
@@ -270,8 +270,8 @@ class Food {
           fightwinsTeam++;
         }
       } else {
-        opponent.energy = opponent.energy * 99 / 100;
-        this.energy = this.energy * 99 / 100;
+        opponent.energy = opponent.energy -20;
+        this.energy = this.energy-20;
         fights++;
         // fightwinsSolo++;
         // fightwinsTeam++;
@@ -346,6 +346,7 @@ class NeuralNetwork {
     this.hiddenSize = hiddenSize;
     this.outputSize = outputSize;
     this.weights = [];
+
     // Initialize weights randomly
     for (let i = 0; i < hiddenSize; i++) {
       for (let j = 0; j < inputSize; j++) {
@@ -366,6 +367,29 @@ class NeuralNetwork {
       offset += this.inputSize;
     }
     return outputs;
+  }
+
+  static crossover(parent1, parent2) {
+    let offspring = new NeuralNetwork(parent1.inputSize, parent1.hiddenSize, parent1.outputSize);
+    
+    // Crossover weights
+    for (let i = 0; i < parent1.weights.length; i++) {
+      if (random() > 0.5) {
+        offspring.weights[i] = parent1.weights[i];
+      } else {
+        offspring.weights[i] = parent2.weights[i];
+      }
+    }
+    
+    return offspring;
+  }
+
+   static mutate(network) {
+    for (let i = 0; i < network.weights.length; i++) {
+      if (random() < 0.3) {
+        network.weights[i] += randomGaussian() * 0.1;
+      }
+    }
   }
 }
 

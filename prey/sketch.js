@@ -175,7 +175,7 @@ class Prey {
     
     // Add noise to the output to introduce randomness
     let angle = output[0] * TWO_PI + 0;
-    let speed = map(this.hunger, 0, 100, 0, 10); // Faster speed when hungrier
+    let speed = map(this.hunger, 0, 100, 1, 10); // Faster speed when hungrier
     this.x += cos(angle) * speed;
     this.y += sin(angle) * speed;
     this.x = constrain(this.x, 0, width);
@@ -212,8 +212,8 @@ class Prey {
   }
 
   updateHunger() {
-    let speed = map(this.hunger, 0, 100, 0, 10);
-    this.hunger -= map(speed,0,10,0,0.5);
+    let speed = map(this.hunger, 0, 100, 1, 10);
+    this.hunger -= map(speed,1,10,0,0.5);
   }
 
   isDead() {
@@ -241,7 +241,7 @@ class Predator {
     ];
     let output = this.brain.predict(inputs);
     let angle = output[0] * TWO_PI;
-    let speed = map(this.hunger, 0, 150, 0, 2); // Slower speed
+    let speed = map(this.hunger, 0, 150, 1, 2); // Slower speed
     this.x += cos(angle) * speed;
     this.y += sin(angle) * speed;
     this.x = constrain(this.x, 0, width);
@@ -284,8 +284,8 @@ class Predator {
 
   updateHunger() {
     // this.hunger -= 0.1;
-    let speed = map(this.hunger, 0, 100, 0, 10);
-    this.hunger -= map(speed,0,10,0,0.1);
+    let speed = map(this.hunger, 0, 100, 1, 10);
+    this.hunger -= map(speed,1,10,0,0.1);
   }
 
   isDead() {
